@@ -19,72 +19,81 @@ While hosting a database through Amazon's RDS service is not difficult, there ar
 It takes several steps to establish a secure connection to any RDS instance.
 
 1. Create a VPC (Virtual Private Cloud) to house the database
-2. Configure a security group associated with this VPC
-3. Create an Internet Gateway within the VPC and assign an Elastic IP Address
+2. Create an Internet Gateway within the VPC and assign an Elastic IP Address
+3. Configure a security group associated with this VPC
 4. Create a database access role with appropriate privileges
 
-Once this is done, users may connect to the database at the IP address assigned to the Internet Gateway using their database credentials (i.e. the MySQL-based login and password), provided the security group allows inbound connections from their IP address range. Further network segmentation may be achieved through subnetting within the VPC and establishing network ACLs. Once connected, the user will have access to whatever resources and permissions their MySQL role allows: in other words, security of the database instance is done through the Amazon-provided VPC and security group, while security of database tables and assigned privileges are done through the MySQL client.
+Once steps 1 and 2 are done, users may connect to the database at the IP address assigned to the Internet Gateway using their database credentials (i.e. the MySQL-based login and password). After step 3, the user must be allowed by the security group to connect; typically, this is done by allowing a certain IP address range. Step 4 requires the user be authorized for the IAM credentials governing the RDS instance. This may seem overkill, but is really no different from the way network and role access is allocated outside the cloud.provided the security group allows inbound connections from their IP address range. 
 
-To provide another layer of security, an IAM role was associated with the database to restrict access to only those users allowed to assume the role. In effect, this requires a user to have AWS credentials as well as MySQL credentials. The AWS credentials are secured by a keypair and may be strengthened with two-factor authentication if desired.
+Once connected, the user will have access to whatever resources and permissions their MySQL role allows: in other words, security of the database instance is done through the Amazon-provided VPC and security group, while security of database tables and assigned privileges are done through the MySQL client.
 
 ## Data Preparation
 
-The data used was a small CSV file containing statistics for 802 Pokemon. This data set was chosen to assist a friend with her curriculum in data science: her goal is to predict certain attributes, such as the Pokemon species, from features such as the Pokemon's attack strength, hit points, and speed. Creating a database and ETL process provides a more realistic environment for the typical data scientist role than simply reading a CSV file; database normalization also facillitates data analysis not easily performed by the structure of the data file: this is explored in more detail below.
+The data used was a small CSV file containing statistics for 802 Pokemon. These include its abilities, attack strength, hit points, and speed. Notwithstanding the small number of records, this data set posed several challenges to load into a normalized SQL database. These are:
 
-Notwithstanding the small number of records, this data set posed several challenges to load into a normalized SQL database. These are:
+* Each record contained several kanjii characters (i.e. Japanese characters) that could not be processed by MySQL's LOAD command. 
+* Abilities for each record were recorded as a variable length array delimited by brackets (i.e. '[' and ']'). 
+* The relationship between Pokemon and their abilities was many-to-many: each Pokemon could posess one or more abilities, and each ability could be used by several different Pokemon.
 
-* Each record contained several kanjii characters (i.e. Japanese characters) that could not be processed by MySQL's LOAD command. Removing these characters required writing a Python script to process the data as raw bytes before outputting a filtered file.
-* Pokemon abilities for each record were recorded as a variable length array delimited by brackets (i.e. '[' and ']'). Abilities were separated within these brackets by commas, meaning the records could not be directly split on the comma. As MySQL does not have a native split() method, another Python script stripped the ability fields from the data file and output a sorted list of unique abilities: the stored procedure that loaded data from stage referenced this list to generate the ability table and correlate each Pokemon with its defined abilities.
-* The relationship between Pokemon and their abilities was many-to-many: each Pokemon could posess one or more abilities, and each ability could be used by several different Pokemon. This required a crosswalk table to fully normalize the relationship.
+The first and second challenges were address with brief Python scripts. The last challenge required a crosswalk table to mediate the relationship between the Pokemon themselves and the table of abilities. The relavant logic from the script that removed characters is shown below:
 
-### Represantive Data Sample
+```python
+def remove_kanji(input):
+    
+	input_filtered = []
+    for item in input:
 
-A representative sample of the unprocessed data is shown below. The large number of fields specifying the Pokemon's relative strength against different attacks (.e.g "against_fire") are truncated for readibility. The presence of kanjii can be seen in the Japanese Name field; the ability array is shown in the second field, Abilities. 
+        # Split on end bracket to separate abilities from the rest
+        item_row = item.split(b']"')
 
-[sample data about here]
+        # Split the remaining stats on comma, then delete kanji field
 
-### Removal of Non-Standard Characters
+        abilities = item_row[0].decode() + ']"'
+        stats = item_row[1].decode().split(',')
+        del stats[KANJI_FIELD]
 
-To remove the kanjii characters from the data set, a Python script was written that processed the data set as raw bytes. The relevant code from this script is shown below: note the need to both convert between bytes and Unicode text and the steps taken to process the internal commas in the ability array.
+        # Join everything into a single list
 
-[kanjii Python script about here]
+        input_filtered.append(abilities + '|'.join(stats))
 
-### Processing Ability Array
-
-As mentioned, each Pokemon's abilities were contained within a variable length array delimited by brackets and internally separated by commas. To fully normalize the tables required extracting these abilities to a separate table; this can't be easily done within MySQL, which has not native split() function or means to convert an array-like object like this field to an actual array (the JSON_ARRAY() family of functions do not work, as the entire "array" is enclosed in quotes and so treated as a single array element).
-
-Instead, a Python script was used to extract the abilities and export them as a sorted, unique list that could be loaded with MySQL's standard LOAD syntax. The relevant code is shown below. It shows a helpful hack by using the set() function to quickly remove duplicate abilities; since this does not preserve the order of elements, the result is converted back into a list and sorted to create the data set to be exported.
-
-[ability Python script about here]
-
-An additional Python script was used to extract the Pokemon type field for database normalization: this can be viewed, along with the other Python scripts, in the Scripts folder. As it contains no code that is significantly different from that shown here, it is ommitted for space considerations.
+    return input_filtered
+```
 
 ## Database Definition
 
-The database is named pokemon and generated via SQL scripts. There are 5 tables; one of these is the staging table, which loads the data unaltered, while the remaining tables are normalized for production. The schema below was generated with xxx and illustrates the table relationships: note that as with the data sample, some fields in the statistics table are ommitted for clarity.
+The database is named pokemon and generated via SQL scripts. There are 5 tables; one of these is the staging table, which loads the data unaltered, while the remaining tables are the fact table (statistics), two dimension tables (ability and species), and the crosswalk table that joins the statistics to the ability table.
 
 [schema def about here]
-
-### Table Definitions
-
-All tables were defined using standard SQL syntax. The abilities, species, and statistics tables are straightforward and not shown here. The definition of the crosswalk table, statistics_to_abilities_xwalk, is potentially more interesting and  shown below,
-
-[crosswalk tabledef about here]
-
-The table has two columns, both foreign keys to the ability and statistics table. For each record in the statistics table, the record id (pokemon_id) is related to the ability_ids corresponding to the set of abilities in the ability table that the Pokemon may use. An example of this relationship is shown below for the Pokemon named Bulbasaur. This Pokemon has two abilities, xxx and xxx, corresponding to two entries in the crosswalk table. Its pokemon_id from the statistics table is related to the ability_ids for these abilities, so that the crosswalk table has two rows for this Pokemon.
-
-[example xwalk for a single Pokemon about here]
-
-The next figure shows the SQL query that recovers this relationship into a single recordset: note that the Pokemon's name (and in fact any fields from the statistics table included in the query) appears twice. This results from the definition of the crosswalk table, which has one entry for *each* ability the Pokemon may use. If this behavior is not desired, the abilities may be serialized using the JSON_ARRAY() set of functions, with the resultant query used to define a View for easy access.
-
-[SQL query to join statistics, abilities, and xwalk about here]
 
 ### Stored Procedures
 
 To transfer the staging data to the normalized tables, the stored procedure load_data_from_stage was written. This procedure used a cursor to insert each row of data from the staging table into the statistics table. The procedure then retrieved the last inserted ID and inserted it, along with the ability IDs of the abilities the Pokemon could use, into the crosswalk table. Because the abilities in the staging table were stored in a pseudo-array, the procedure used the INSTR() function on the abilities field to determine the appropriate abilities for each row, and then selected the ability_ID from the abilities table corresponding to the selected values. This generated each set of entries into the crosswalk table without needing to split the abilities field in the staging table into individual elements. The code that performed this operation is shown below.
 
-[cursor code to insert Pokemon into statistics table]
+```SQL read_loop: loop
+		fetch stage_cursor into pokemon_name, pokemon_abilities, pokemon_type;
+		if done then 
+			leave read_loop;
+		end if;
+		
+		-- Get the species_id from the species table corresponding to the Pokemon's type
+		-- so we can load that instead of the type
+		
+		select species_id from species where species_type = pokemon_type into new_species_id;
+		
+		-- Insert next pokemon into statistics table
+		
+		insert into statistics (english_name, classification, ... )
+		select english_name, classification, ... from stage where english_name = pokemon_name;
+	
+		-- Insert the pokemon ID and ability_ids into the xwalk.
+	
+		set new_pokemon_id = last_insert_id();
+	
+		insert into statistics_to_abilities_xwalk (pokemon_id_FK, ability_id_FK)
+		select new_pokemon_id, ability_id from abilities where instr(pokemon_abilities, ability);
 
+		end loop;
+```
 Since the species field was normalized as a separate table, the cursor also inserted the appropriate species_id into the statistics table by selecting the species_ID from the species table corresponding to the Pokemon's species in the staging table (where the field is named type1). The relevant code for this operation is shown below.
 
 ## Summary

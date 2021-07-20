@@ -2,9 +2,9 @@
 
 CREATE TABLE IF NOT EXISTS statistics (
 	pokemon_id bigint not null auto_increment unique primary key,
-	english_name varchar(50),
-	classification varchar(50),
-	primary_type varchar(50),
+	english_name varchar(50) not null unique,
+	classification_id bigint,
+	species_id bigint,
 	hit_points integer,
 	attack integer,
 	defense integer,
@@ -39,5 +39,14 @@ CREATE TABLE IF NOT EXISTS statistics (
 	percentage_male float,
 	pokedex_number integer,
 	generation integer,
-	is_legendary boolean
+	is_legendary boolean,
+    
+    index ndx_classification_id_FK (classification_id),
+    index ndx_species_id_FK (species_id),
+    
+    foreign key classification_id_FK (classification_id)
+    references classification (classification_id),
+    
+    foreign key species_id_FK (species_id)
+	references species (species_id)
 )
