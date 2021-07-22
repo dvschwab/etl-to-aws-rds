@@ -20,5 +20,5 @@ lines terminated by '\n'
 
 alter table statistics
 add constraint species_id_FK
-foreign key ndx_species_id_FK (species)
+foreign key ndx_species_id_FK (species_id)
 references species (species_id);

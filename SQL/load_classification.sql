@@ -20,5 +20,5 @@ lines terminated by '\n'
 
 alter table statistics
 add constraint classification_id_FK
-foreign key ndx_classification_id_FK (classification)
+foreign key ndx_classification_id_FK (classification_id)
 references classification (classification_id);
