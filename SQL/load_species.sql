@@ -13,6 +13,7 @@ alter table statistics drop constraint species_id_FK;
 truncate species;
 load data local infile 'C:\\Users\\dvschwab\\Documents\\Programming\\Python3\\pokemon-analysis-and-classification\\Data\\pokemon_types.dat'
 into table species
+lines terminated by '\n'
 (species_type);
 
 -- Add constraint back to statistics table
