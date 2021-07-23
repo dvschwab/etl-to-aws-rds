@@ -11,7 +11,7 @@ alter table statistics drop constraint classification_id_FK;
 -- Truncate and load
 
 truncate classification;
-load data local infile 'C:\\Users\\dvschwab\\Documents\\Programming\\Python3\\pokemon-analysis-and-classification\\Data\\pokemon_classifications.dat'
+load data local infile '../Data/pokemon_classification.dat'
 into table classification
 lines terminated by '\n'
 (classification_type);
