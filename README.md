@@ -65,7 +65,7 @@ def remove_kanji(input):
 
 The database is named pokemon and generated via SQL scripts. There are 5 tables; one of these is the staging table, which loads the data unaltered, while the remaining tables are the fact table (statistics), two dimension tables (ability and species), and the crosswalk table that joins the statistics to the ability table.
 
-![](Images/pokemon_EER_model_image.png)
+![](Images/pokemon_EER_model_image.PNG)
 
 ### Stored Procedures
 
