@@ -13,7 +13,8 @@ alter table statistics drop constraint classification_id_FK;
 truncate classification;
 load data local infile '../Data/pokemon_classification.dat'
 into table classification
-lines terminated by '\n'
+	character set utf8mb4
+	lines terminated by '\n'
 (classification_type);
 
 -- Add constraint back to statistics table

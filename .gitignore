@@ -1,6 +1,7 @@
 # Added by DVS 7/14/2021
 SQL/scratch.sql
 ShellScripts
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
