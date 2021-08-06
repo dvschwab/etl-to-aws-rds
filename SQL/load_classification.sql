@@ -11,6 +11,7 @@ alter table statistics drop constraint classification_id_FK;
 -- Truncate and load
 
 truncate classification;
+
 load data local infile '../Data/pokemon_classification.dat'
 into table classification
 	character set utf8mb4
