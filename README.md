@@ -76,68 +76,77 @@ For the second challenge, a Python script was used to extract the array contents
 The last challenge was addressed with a cross-walk table that mediated the relationship between the *statistics* and *abilities* tables. The stored procedure (described below) *load_staged_data* populated this table with the appropriate keys.
 
 ```python
-	# Process each file row
-    	for row in file_reader:
+# Process each file row
+for row in file_reader:
 	
-        # Get the *ability* field and remove brackets
-        row_strip = row[ABILITY_FIELD].strip("[]")
+# Get the *ability* field and remove brackets
+row_strip = row[ABILITY_FIELD].strip("[]")
 
-        # Split the field into single-string elements
-        for ability in row_strip.split(","):
+# Split the field into single-string elements
+for ability in row_strip.split(","):
 	    
-            # Remove unneeded chars and append
-            ability_strip = ability.strip(" '")
-            ability_list.append(ability_strip)
+	# Remove unneeded chars and append
+        ability_strip = ability.strip(" '")
+        ability_list.append(ability_strip)
 
-    # Make a new list with each unique ability
+# Make a new list with each unique ability
+# list(set(*)) removes dups (set) and returns a list
+unique_ability_list = list(set(ability_list))
+unique_ability_list.sort()
 
-    # list(set(*)) removes dups (set) and returns a list
-    unique_ability_list = list(set(ability_list))
-    unique_ability_list.sort()
-
-    return unique_ability_list
+return unique_ability_list
 ```
+
+Another Python script, *extract_field* was used to generate the Dimension data files from the CSV file. This script can be used to extract any field from a delimited file by position, optionally sorting the values. It is available in the `Scripts` folder.
+
 ## Database Schema
 
 This is the database schema conceptualized as an Entity-Relationship (ER).
 
-![](Images/pokemon_EER_model_image.PNG)
+![](Images/pokemon_EER_model_image.png)
 
 ### Stored Procedures
 
 To transfer the staging data to the normalized tables, the stored procedure *load_staged_data* was written. This procedure used a cursor to insert each row of data from the staging table into the *statistics* table. The procedure then retrieved the last inserted ID and inserted it, along with the ability IDs of the abilities the Pokemon could use, into the crosswalk table.
 
-Because the abilities in the staging table were stored in a pseudo-array, the procedure used the `INSTR()` function on the abilities field to determine the appropriate abilities for each row, and then selected the *ability_ID* from the abilities table corresponding to the selected values. This generated each set of entries into the crosswalk table without needing to split the abilities field in the staging table into individual elements. The code that performed this operation is shown below.
+Because the abilities in the staging table were stored in a pseudo-array, the procedure used the `INSTR()` function on the abilities field to determine the appropriate abilities for each row, and then selected the *ability_ID* from the abilities table corresponding to the selected values. This generated each set of entries into the crosswalk table without needing to split the abilities field in the staging table into individual elements. The code excerpt that performed this operation is shown below.
 
 ```SQL read_loop: loop
-		fetch stage_cursor into pokemon_name, pokemon_abilities, pokemon_type;
-		if done then 
-			leave read_loop;
-		end if;
-		
-		-- Get the species_id from the species table corresponding to the Pokemon's type
-		-- so we can load that instead of the type
-		
-		select species_id from species where species_type = pokemon_type into new_species_id;
-		
-		-- Insert next pokemon into statistics table
-		
-		insert into statistics (english_name, classification, ... )
-		select english_name, classification, ... from stage where english_name = pokemon_name;
-	
-		-- Insert the pokemon ID and ability_ids into the xwalk.
-	
-		set new_pokemon_id = last_insert_id();
-	
-		insert into statistics_to_abilities_xwalk (pokemon_id_FK, ability_id_FK)
-		select new_pokemon_id, ability_id from abilities where instr(pokemon_abilities, ability);
+fetch stage_cursor into pokemon_name, pokemon_abilities, pokemon_type, pokemon_classification;
 
-		end loop;
+if done then 
+	leave read_loop;
+end if;
+		
+-- Get the species_id from the species table corresponding to the Pokemon's type
+-- so we can load that instead of the type
+		
+select species_id from species where species_type = pokemon_type into new_species_id;
+		
+-- Do same for classification_id
+		
+select classification_id from classification where classification_type = pokemon_classification into new_classification_id;
+		
+-- Insert next pokemon into statistics table
+		
+insert into statistics (english_name, classification, ... )
+select english_name, classification, ... from stage where english_name = pokemon_name;
+	
+-- Insert the pokemon ID and ability_ids into the xwalk.
+	
+set new_pokemon_id = last_insert_id();
+	
+insert into statistics_to_abilities_xwalk (pokemon_id_FK, ability_id_FK)
+select new_pokemon_id, ability_id from abilities where instr(pokemon_abilities, ability);
+
+end loop;
 ```
 Since the *classification* and *species* fields were normalized as separate tables, the cursor also inserted the appropriate foreign keys into the statistics table. An additional procedure, *reset_primary_tables*, was written to truncate the fact table and crosswalk prior to reloading the data.
 
 ## Summary
 
-This project utilized the Amazon RDS service (and associated services) in order to create a MySQL data warehouse containing data on 802 Pokemon. Network access to the database was configured using Amazon's VPC service, and the RDS instance was secured using the IAM service. The database itself illustrates a basic star schema and is configured with appropriate permissions to secure access. The data was processed using a custom Python script and loaded into the database using both SQL LOAD operations and a stored procedure. Several challenges, including the presence of Japanese characters, the denormalized ability field, and the many-to-many relationship between Pokemon and their abilities were addressed. 
+This project utilized the Amazon RDS service (and associated services) in order to create a MySQL data warehouse containing data on 802 Pokemon. Network access to the database was configured using Amazon's VPC service, and the RDS instance was secured using the IAM service.
+
+The database itself illustrates a basic star schema and is configured with appropriate permissions to secure access. The data was processed using a custom Python script and loaded into the database using both SQL LOAD operations and a stored procedure. Several challenges, including the presence of Japanese characters, the denormalized ability field, and the many-to-many relationship between Pokemon and their abilities were addressed. 
 
 While the database itself is relatively small, the steps outlined here may easily be applied to much larger data sets. Hopefully, this brief discussion will encourage the use of Amazon's RDS service for similar projects.
