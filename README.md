@@ -101,7 +101,7 @@ Another Python script, *extract_field* was used to generate the Dimension data f
 
 ## Database Schema
 
-This is the database schema conceptualized as an Entity-Relationship (ER).
+This is the database schema conceptualized with an Entity-Relationship Diagram (ERD).
 
 ![](Images/pokemon_EER_model_image.png)
 
