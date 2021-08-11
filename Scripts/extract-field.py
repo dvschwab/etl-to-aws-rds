@@ -12,11 +12,10 @@ def extract_delimited_field(file_reader, position):
         Returns a list of unique values from a delimited file for the field
         at numeric position *position* (zero-based). Assumes the file has no header;
         if it does, the header will be returned as the first element of the list.
-        arguments:
-            file_reader: a reader or reader like oject, typically csv.reader
-            position: the position of the field to extract (zero-based)
-        returns:
-            a list of unique values for that field
+
+        :param file_reader: a reader or reader like oject, typically csv.reader
+        :param position: the position of the field to extract (zero-based)
+        :returns: a list of unique values for that field
     """
 
     # Verify position agument is an integer
@@ -37,19 +36,6 @@ def extract_delimited_field(file_reader, position):
     unique_field = list(set(field_list))
 
     return unique_field
-
-# debug configuration for testing extract_fields()
-""" if __name__ == '__main__':
-
-    infile = 'Data\\pokemon_ready_to_stage.dat'
-    field_position = 29
-
-    with open(infile, 'rt') as f:
-        csv_reader = csv.reader(f, delimiter = '|')
-        fields = extract_fields(csv_reader, field_position)
-
-    print(fields[0:10]) """
-
 
 if __name__ == '__main__':
     
