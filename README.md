@@ -103,7 +103,7 @@ Another Python script, *extract_field* was used to generate the Dimension data f
 
 This is the database schema conceptualized with an Entity-Relationship Diagram (ERD).
 
-![](Images/pokemon_EER_model_image.png)
+![](Images/pokemon_ERD_model.PNG)
 
 ### Stored Procedures
 
