@@ -1,21 +1,16 @@
--- Create crosswalk table to relate each pokemon to their abilities
+-- Create crosswalk table to relate each pokemon to its abilities
 -- This is many-to-many, as each pokemon can have multiple abilities
 -- and each ability may belong to several different pokemon
+-- pokemon_id_FK is FK to pokemon_id PK in the statistics table
+-- ability_id_FK is FK to ability_id PK in the ability table
+-- composite key (pokemon_id_FK, ability_id_FK) is a PK
 
-CREATE TABLE IF NOT EXISTS statistics_to_abilities_xwalk (
-	pokemon_id_FK bigint not null,
-	ability_id_FK bigint not null,
-
-	index (pokemon_id_FK),
-	index (ability_id_FK),
-
-	constraint statistics_to_abilities_xwalk_pokemon_id_FK
-    foreign key (pokemon_id_FK)
-	references statistics (pokemon_id)
-	on update cascade on delete cascade,
-
-	constraint statistics_to_abilities_xwalk_ability_id_FK
-	foreign key (ability_id_FK)
-	references abilities (ability_id)
-	on update cascade on delete restrict
-)
+CREATE TABLE IF NOT EXISTS `statistics_to_abilities_xwalk` (
+  `pokemon_id_FK` bigint NOT NULL,
+  `ability_id_FK` bigint NOT NULL,
+  KEY `pokemon_id_FK` (`pokemon_id_FK`),
+  KEY `ability_id_FK` (`ability_id_FK`),
+  PRIMARY KEY (pokemon_id_FK, ability_id_FK)
+  CONSTRAINT `statistics_to_abilities_xwalk_ability_id_FK` FOREIGN KEY (`ability_id_FK`) REFERENCES `ability` (`ability_id`),
+  CONSTRAINT `statistics_to_abilities_xwalk_pokemon_id_FK` FOREIGN KEY (`pokemon_id_FK`) REFERENCES `statistics` (`pokemon_id`)
+);
