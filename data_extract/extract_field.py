@@ -40,7 +40,7 @@ def extract_delimited_field(file_reader, position):
 
     return unique_field
 
-if __name__ == '__main__':
+def extract_field_from_file():
     
     # Parse CLI args
     
@@ -72,8 +72,6 @@ if __name__ == '__main__':
             field = extract_delimited_field(csv_reader, args.field_position)
     except OSError:
         print(f'There was an error in opening or reading the file {args.input_file}. Make sure the file exists and is not corrupt.')
-    except:
-        print('There was an error while extracting the field values. The program has terminated.')
 
     # Sort field if user desires
     if args.sorted:
@@ -88,3 +86,6 @@ if __name__ == '__main__':
             f.write(field[-1])
     except IOError:
         print(f'There was an error writing data to the file {args.output_file}. Make sure the filename is valid and the program can write to the output folder.')
+
+if __name__ == '__main__':
+    extract_field_from_file()
