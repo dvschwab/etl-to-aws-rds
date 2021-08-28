@@ -1,10 +1,10 @@
 # Runs the unit tests for the extract-field module
-# DVS 8/13/2021
+# DVS 8/28/2021
 
 import csv
 import unittest as ut
 from unittest.case import TestCase
-from data_extract.extract_field import extract_delimited_field, extract_field_from_file
+from data_extract.extract_field import extract_delimited_field, extract_field_from_file, write_field_to_file
 
 class TestFileDelimiters(TestCase):
 
@@ -62,19 +62,27 @@ class TestPosition(TestCase):
 
 class TestFileHandling(TestCase):
 
+    # Tests whether the function can handle invalid file names
+
     def test_file_input_error(self):
         with self.assertRaises(IOError):
-            open('not/a/real/file/file.dat', 'rt')
+            extract_field_from_file('not/a/real/file', 1)
 
     def test_file_output_error(self):
+        field = []
         with self.assertRaises(IOError):
-            open('not/a/real/file/file.dat', 'wt')
+            write_field_to_file('not/a/real/file', field)
 
 class TestSorting(TestCase):
 
+    # Tests whether the function sorts correctly when sorted=True
+
     def test_sorted(self):
-        with open('tests/input/pokemon_test_data_input_csv.dat') as input:
-            output_field = extract_field_from_file()
+        input_file = 'tests/input/pokemon_test_data_input_csv.dat'
+        output_field = extract_field_from_file(input_file, 2, sorted=True)
+        with open('tests/input/pokemon_test_data_output_3_sorted.csv', 'rt') as test_file:
+            sorted_field = [line.rstrip() for line in test_file]
+        self.assertEqual(output_field, sorted_field)
 
 if __name__ == '__main__':
     ut.main()

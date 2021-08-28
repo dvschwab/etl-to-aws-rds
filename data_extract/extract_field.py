@@ -21,7 +21,7 @@ def extract_delimited_field(file_reader, position):
 
     # Verify position agument is an integer
     if not isinstance(position, int):
-        print(f'The position argument {position} is not an intger')
+        print(f'The position argument {position} is not an integer')
         raise TypeError
 
     # Make sure position is not negative
