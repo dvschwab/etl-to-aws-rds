@@ -1,8 +1,11 @@
--- Creates the species table, which stores the types of pokemon
--- species_id is FK to the species field in the statistics table
+-- Creates the species dimension table
+-- species_type is unique
+-- species_id is PK to the species_id FK in the statistics table
 
-use pokemon;
 create table if not exists species (
-	species_id bigint not null auto_increment unique primary key,
-    species_type varchar(50)
-);
+	species_id bigint not null auto_increment,
+    species_type varchar(50),
+	primary key species_id,
+	unique key species_id (species_id),
+	unique species_type_UNIQUE (species_type)
+) auto_increment=1;

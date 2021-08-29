@@ -1,25 +1,11 @@
--- Load the species table
--- Requires temporarily removing the FK constraint to this table
--- from the statistics table
+-- Load the species dimension table
+-- This must be done prior to creating the statistics table,
+-- or else the species_id FK on that table must be removed
 
 use pokemon;
 
--- Remove FK constraint to species_id from statistics table
-
-alter table statistics drop constraint species_id_FK;
-
--- Truncate and load
-
-truncate species;
-
 load data local infile '../Data/pokemon_species.dat'
 into table species
-lines terminated by '\n'
+	character set utf8mb4
+	lines terminated by '\n'
 (species_type);
-
--- Add constraint back to statistics table
-
-alter table statistics
-add constraint species_id_FK
-foreign key ndx_species_id_FK (species_id)
-references species (species_id);
