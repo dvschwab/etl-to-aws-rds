@@ -5,6 +5,7 @@ Images/*.bak
 Images/*.mwb
 ShellScripts
 .vscode
+*.pem
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
