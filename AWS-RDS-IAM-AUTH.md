@@ -56,3 +56,61 @@ Next, configure **Actions** to *Permissions management* and *connect*. This prov
 After setting user Actions, select the **Resources** arrow to specify the particular RDS instance the policy governs. This will bring up a dialogue box: you will need to specify the RDS *Region*, the *Account* where it was created, the *Resource ID*, and the *User Name* of the user to have access. The Region and Account number can be found on the AWS Console; the Resource ID is just the name of the RDS instance, and the user name is the user who will have access.
 
 Finally, you can optionally set certain *Request conditions*, such as requiring Multi-Factor Authentication (MFA) or restricting access to a specific IP range. Neither is necessary, but may be configured to further enhance database security.
+
+#### Attach IAM Policy to a User
+
+Once the policy governing database access is made, you need to attach it to an AWS user. This can be a new user you create or an existing user: the only condition is that the user must also have a valid login to the database itself with the same user name. In other words, if you create a new AWS user named *iam_user*, you will also need (in the next step) to create a user named *iam_user* in the database itself (i.e. using `CREATE USER`).
+
+After the user has been selected, attach the database access policy to it. This can be done at the IAM Console by selecting the access policy under **Policies** followed by **Actions > Attach**. You can filter by user name if needed.
+
+#### Create a Database Account for Policy User
+
+The above steps will attach the IAM policy to an AWS user; however, it is also necessary to have a database user with the same account name. For a new user, use `CREATE USER` with the following syntax:
+
+```SQL
+CREATE USER <username> IDENTIFIED WITH AWSAuthenticationPlugin as 'RDS'
+```
+
+Here, instead of specifying a password, the `IDENTIFIED BY` parameter is set to *AWSAuthenticationPlugin*, which the the MySQL identification module used for IAM connections. If you want to use an existing user, substitute the syntax for `ALTER USER`; note that this will invalidate that user's password, so they won't be able to connect to the database until their IAM access is fully configured.
+
+#### Connecting to the Database as an IAM User
+
+The last step in configuring an IAM connection is to actually connect to the database. This is a two-step process involving the AWS CLI and the MySQL client: the CLI is used to generate a security token that is then passed to the client in lieu of a password (note that you can also connect using the AWS SDK or a library such as Python's *boto3*; the steps involved are similar).
+
+To generate the authentication token, use the following syntax for the AWS CLI:
+
+```Linux
+aws rds generate-db-auth-token \
+	--hostname <hostname> \
+	--port 3306 \
+	--region <region> \
+	--username <user>
+```
+(in this example, the `\` character is only to continue the statement across line breaks; it may be ommitted if desired).
+
+Substitute your database instance parameters for the *hostname*, *region*, and *user*; the port may be ommitted if it the default 3306. The *user* must exist in the AWS account and have the IAM policy attached allowing access to the database. This will return a very long string that serves as the user's password from the mySQL client. The official documentation, accessible at `docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.Connecting.AWSCLI.html`, provides the following example of the first part of a token:
+
+```
+rdsmysql.123456789012.us-west-2.rds.amazonaws.com:3306/?Action=connect&DBUser=jane_doe&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900...
+```
+
+(here, the trailing three dots have the usual meaning of MORE TO FOLLOW, and are not part of the token)
+
+Since the authentication token may be several hundred characters long, Amazon recommends saving it as an environmental variable. In Linux, you can use the `set` command to do this; for example:
+
+```Linux
+set TOKEN = "$(aws rds generate-db-auth-token <parameters>)"
+```
+
+This syntax runs the shell command in the parentheses and saves the output as the environmental variable TOKEN. You can then access the variable as $TOKEN in the following call to the MySQL client:
+
+```Linux
+mysql --host=<hostname> --port=3306 --ssl-ca=<path/to/CA> --enable-cleartext-plugin --user=<user> --password=$TOKEN
+```
+
+As can be seen, the only additional syntax is the parameter `--password=$TOKEN` and the option `--enable-cleartext-plugin`. The latter is necessary for the client to submit the password (i.e. $TOKEN) without encryption (you'll still see a warning, however). Normally, a cleartext password is a security risk, but the authentication token is similar to the encryption key for TLS, which is also passed in the clear (you can see this the next time you send an e-mail: look for the very long string of bytes in the URL). This type of encryption, known as public key encryption, sends the key in the clear because it is a mathematical combination of two very large prime numbers: for the transformations used (typically a simple product or discrete logarithm) there is no feasible way for someone with the transformed key to recover its components, so sending it as cleartext is acceptable.
+
+After submitting the MySQL syntax, and assuming all goes as intended, you will be connected to the database with both SSL and IAM role-based security. You can verify the SSL part by entering `status` at the mysql prompt.
+
+
+
