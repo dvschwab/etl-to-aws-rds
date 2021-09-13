@@ -74,11 +74,11 @@ CREATE USER <username> IDENTIFIED BY AWSAuthenticationPlugin as 'RDS'
 
 Here, instead of specifying a password, the `IDENTIFIED BY` parameter is set to *AWSAuthenticationPlugin*, which the MySQL identification module used for IAM connections. If you want to use an existing user, substitute the syntax for `ALTER USER`; note that this will invalidate that user's password, so they won't be able to connect to the database until their IAM access is fully configured.
 
-#### 5. Connecting to the Database as an IAM User
+#### 5. Generate the Authentication Token
 
-The last step in configuring an IAM connection is to actually connect to the database. This is a two-step process involving the AWS CLI and the MySQL client: the CLI is used to generate a security token that is then passed to the client in lieu of a password (note that you can also connect using the AWS SDK or a library such as Python's *boto3*; the steps involved are similar).
+The last step in configuring an IAM connection is to actually connect to the database. This is a two-step process involving the AWS CLI and the MySQL client: the CLI is used to generate a security token that is then passed to the client in lieu of a password.
 
-To generate the authentication token, use the following syntax for the AWS CLI:
+We will describe how to generate the token first. To generate the authentication token, use the following syntax for the AWS CLI:
 
 ```Linux
 aws rds generate-db-auth-token \
@@ -87,7 +87,6 @@ aws rds generate-db-auth-token \
 	--region <region> \
 	--username <user>
 ```
-(in this example, the `\` character is only to continue the statement across line breaks; it may be omitted if desired).
 
 Substitute your database instance parameters for the *hostname*, *region*, and *user*; the port may be omitted if it the default 3306. The *user* must exist in the AWS account and have the IAM policy attached allowing access to the database.
 
@@ -105,6 +104,8 @@ Since the authentication token may be several hundred characters, Amazon recomme
 set TOKEN = "$(aws rds generate-db-auth-token <parameters>)"
 ```
 
+#### Connect to the MySQL Database with the Authentication Token
+	
 This syntax runs the shell command specified between the parentheses and saves the output as the environmental variable TOKEN. You can then access the variable as $TOKEN in the following call to the MySQL client:
 
 ```Linux
