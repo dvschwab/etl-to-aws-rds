@@ -46,13 +46,13 @@ Once connectivity has been established and SSL configured, you can begin the pro
 
 #### 1. Enable IAM Authentication
 
-The first step is to enable IAM Authentication for the database. You can do this by selecting the database from the RDS Console and then selecting **Modify**. Be sure to enable the change to be applied immediately; otherwise, it won't be applied until the next maintenance window. It typically takes a few minutes to apply the change; you can verify that IAM Authentication is enabled on the **RDS > Databases > <database-name> > Configuration** screen.
+The first step is to enable IAM Authentication for the database. You can do this by selecting the database from the RDS Console and then selecting **Modify**. Be sure to enable the change to be applied immediately; otherwise, it won't be applied until the next maintenance window. It typically takes a few minutes to apply the change; you can verify that IAM Authentication is enabled on the **RDS > Databases > database-name > Configuration** screen.
 
 #### 2. Create IAM Policy Governing Database Access
 
 After IAM Authentication is enabled, the next step is to create an IAM Policy to govern database access. To do this, go to the IAM Console and select **Policies > Create Policy**. Then, select *RDS IAM Authentication* from the list of services (NOT the *RDS* service itself; that refers to RDS governance, not database access). 
 
-Next, configure **Actions** to *Permissions management* and *connect*. This provides the policy grantee the ability to connect to the database, but no additional permissions. This is what you want for the typical user: database-level permissions, such as SELECT, INSERT, etc. will still control what the user can do for a given database, while the IAM Authentication provides an additional secureity layer for database access. If desired, the *Manual actions* setting allows you to grant RDS permissions other than simply *connect*: note, however, that these permissions refer to the RDS instance, NOT the database itself. You should only enable these additional permissions if the user is expected to perform RDS actions such as creating or modifying an RDS instance.
+Next, configure **Actions** to *Permissions management* and *connect*. This provides the policy grantee the ability to connect to the database, but no additional permissions. This is what you want for the typical user: database-level permissions, such as SELECT, INSERT, etc. will still control what the user can do for a given database, while the IAM Authentication provides an additional security layer for database access.
 
 After setting user **Actions**, select the **Resources** arrow to specify the particular RDS instance the policy governs. This will bring up a dialogue box: you will need to specify the RDS *Region*, the *Account* where it was created, the *Resource ID*, and the *User Name* of the user to have access. The Region and Account number can be found on the AWS Console; the Resource ID is just the name of the RDS instance, and the user name is the user who will have access.
 
