@@ -10,11 +10,11 @@ While configuring role-based authentication is not difficult, it does require se
 
 Here is the list of required steps:
 
-* Preliminary
+#### Preliminary
 1. Establish database connectivity
 2. Secure connection with SSL
 
-* Role-Based Security
+#### Role-Based Security
 1. Enable IAM authentication for database
 2. Create policy allowing database access
 3. Create IAM user and attach access policy
