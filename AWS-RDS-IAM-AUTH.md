@@ -52,7 +52,7 @@ The first step is to enable IAM Authentication for the database. You can do this
 
 After IAM Authentication is enabled, the next step is to create an IAM Policy to govern database access. To do this, go to the IAM Console and select **Policies > Create Policy**. Then, select *RDS IAM Authentication* from the list of services (NOT the *RDS* service itself; that refers to RDS governance, not database access). 
 
-Next, configure **Actions** to *Permissions management* and *connect*. This provides the policy grantee the ability to connect to the database, but no additional permissions. This is what you want for the typical user: database-level permissions, such as SELECT, INSERT, etc. will still control what the user can do for a given database, while the IAM Authentication provides an additional security layer for database access.
+Next, configure **Actions** to *Permissions management* and *connect*. This provides the policy grantee the ability to connect to the database, but no additional permissions. This is what you want for the typical user: database-level permissions, such as `SELECT`, `INSERT`, etc. will still control what the user can do for a given database, while the IAM Authentication provides an additional security layer for database access.
 
 After setting user **Actions**, select the **Resources** arrow to specify the particular RDS instance the policy governs. This will bring up a dialogue box: you will need to specify the RDS *Region*, the *Account* where it was created, the *Resource ID*, and the *User Name* of the user to have access. The Region and Account number can be found on the AWS Console; the Resource ID is just the name of the RDS instance, and the user name is the user who will have access.
 
