@@ -104,7 +104,7 @@ Since the authentication token may be several hundred characters, Amazon recomme
 set TOKEN = "$(aws rds generate-db-auth-token <parameters>)"
 ```
 
-#### Connect to the MySQL Database with the Authentication Token
+#### 6. Connect to the MySQL Database with the Authentication Token
 	
 This syntax runs the shell command specified between the parentheses and saves the output as the environmental variable TOKEN. You can then access the variable as $TOKEN in the following call to the MySQL client:
 
