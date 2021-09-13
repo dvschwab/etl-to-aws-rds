@@ -1,4 +1,4 @@
-# Establishing IAM Role-Based Authentication for AWS-hosted Databases
+# Establishing IAM Role-Based Authentication for AWS-Hosted Databases
 
 Amazon Web Services (AWS) provides the Relational Database Service (RDS) to procure MySQL and other SQL databases. The RDS service handles typical administrative tasks such as backups and updates, while users interact with the database itself. Together, this natural division of responsibility offloads the time-consuming administrative work to Amazon while providing users with a fully-functional database instance accessible with their preexisting skill set.
 
