@@ -9,6 +9,8 @@ To navigate the document, select from the following in-line links:
 * [AWS Considerations](#aws-considerations)
 * [The MySQL Database](#the-mysql-database-and-data)
 
+For an in-depth overview of how to connect to an RDS instance using IAM role-based authentication, see [Establishing IAM Role-Based Authentication for AWS-Hosted Databases](AWS-RDS-IAM-AUTH.md)
+
 ## Introduction
 
 Amazon's Relational Database Service (RDS) is a straightforward, yet powerful way to transition database projects to the cloud. Established workflows are largely preserved, while Amazon handles database administration: maintaining the file system, provisioning backups, and applying software updates and security fixes. They offer different sizes from the tiny 1 core, 1 GiB RAM *db.t2.micro* on the Free Tier to the more realistic *db.m5.4xlarge*  with 16 cores and 64GiB of RAM. Auto-scaling is also available for high-availibity databases with variable useage patterns.
