@@ -1,5 +1,13 @@
 # An Amazon RDS MySQL Instance: Design and Implementation
 
+This README file describes how to connect to Amazon's Relational Database Service (RDS) using the MySQL client. It also describes the database itself, including the data used, schema, stored procedures, and Python scripts used in its creation.
+
+To navigate the document, select from the following in-line links:
+
+[Introduction](#introduction)
+
+## Introduction
+
 Amazon's Relational Database Service (RDS) is a straightforward, yet powerful way to transition database projects to the cloud. Established workflows are largely preserved, while Amazon handles database administration: maintaining the file system, provisioning backups, and applying software updates and security fixes. They offer different sizes from the tiny 1 core, 1 GiB RAM *db.t2.micro* on the Free Tier to the more realistic *db.m5.4xlarge*  with 16 cores and 64GiB of RAM. Auto-scaling is also available for high-availibity databases with variable useage patterns.
 
 Of course, none of this is free: the aforementioned *db.m5.4xlarge* costs $1.37 per instance hour, or $986 per month for 24/7 access. Hosting the database in multiple Availability Zones to ensure reliablity doubles (or triples) this cost. Automated backups, snapshots, and logs are other expenses. Without a commitment to cost management, the savings advantages of the cloud are easily lost to these extraneous expenses.
