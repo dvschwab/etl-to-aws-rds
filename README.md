@@ -9,7 +9,7 @@ To navigate the document, select from the following in-line links:
 * [AWS Considerations](#aws-considerations)
 * [The MySQL Database](#the-mysql-database-and-data)
 
-For an in-depth overview of how to connect to an RDS instance using IAM role-based authentication, see [Establishing IAM Role-Based Authentication for AWS-Hosted Databases](AWS-RDS-IAM-AUTH.md)
+For an in-depth overview of how to connect to an RDS instance using IAM role-based authentication, see [Establishing IAM Role-Based Authentication for AWS-Hosted Databases](AWS-RDS-IAM-AUTH.md).
 
 ## Introduction
 
