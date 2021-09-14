@@ -90,7 +90,7 @@ aws rds generate-db-auth-token \
 
 Substitute your database instance parameters for the *hostname*, *region*, and *user*; the port may be omitted if it the default 3306. The *user* must exist in the AWS account and have the IAM policy attached allowing access to the database.
 
-This will return a very long string that serves as the user's password from the mySQL client. You can see an example token at [sample token](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.Connecting.AWSCLI.html), provides the following example of the first part of a token:
+This will return a very long string that serves as the user's password from the mySQL client; the AWS documentation provides a [sample token](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.Connecting.AWSCLI.html) that is reproduced here:
 
 ```
 rdsmysql.123456789012.us-west-2.rds.amazonaws.com:3306/?Action=connect&DBUser=jane_doe&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Expires=900...
