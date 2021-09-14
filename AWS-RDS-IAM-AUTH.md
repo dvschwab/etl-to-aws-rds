@@ -116,5 +116,7 @@ As can be seen, the only additional syntax is the parameter `--password=$TOKEN` 
 
 After submitting the MySQL syntax, and assuming all goes as intended, you will be connected to the database with both SSL and IAM role-based security. You can verify the SSL part by entering `status` at the mysql prompt.
 
+To simplify the process, you can use a shell script to retrieve the token and connect to the database: here is an [example script](https://github.com/dvschwab/etl-to-aws-rds/blob/1a3b0cdf651c6505cce6c4d57ab86306a242c0e1/conn-mysql-iam-auth.sh).
+
 
 
