@@ -5,6 +5,9 @@ This README file describes how to connect to Amazon's Relational Database Servic
 To navigate the document, select from the following in-line links:
 
 [Introduction](#introduction)
+[Database and Data Summary](#database-and-data-summary)
+[AWS Considerations](#aws-considerations)
+[The MySQL Database](#the-mysql-database-and-data)
 
 ## Introduction
 
