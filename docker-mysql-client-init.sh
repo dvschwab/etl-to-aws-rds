@@ -1,3 +1,4 @@
+#!/usr/bin/bash
 
 # Install required packages
 apt-get update
