@@ -88,7 +88,7 @@ aws rds generate-db-auth-token \
 	--username <user>
 ```
 
-Substitute your database instance parameters for the *hostname*, *region*, and *user*; the port may be omitted if it the default 3306. The *user* must exist in the AWS account and have the IAM policy attached allowing access to the database.
+Substitute your database instance parameters for the *hostname*, *region*, and *user*; the port must be specified, even if it the default 3306. The *user* must exist in the AWS account and have the IAM policy attached allowing access to the database.
 
 This will return a very long string that serves as the user's password from the mySQL client; the AWS documentation provides a [sample token](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/UsingWithRDS.IAMDBAuth.Connecting.AWSCLI.html) that is reproduced here:
 
@@ -118,7 +118,7 @@ As can be seen, the only additional syntax is the parameter `--password=$TOKEN` 
 
 After submitting the MySQL syntax, and assuming all goes as intended, you will be connected to the database with both SSL and IAM role-based security. You can verify the SSL part by entering `status` at the mysql prompt.
 
-If you receive an error, double-check that the token has been generated. Remember that when setting a bash environmental variable there can be no space between the variable and the value (e.g. TOKEN="abc", not TOKEN= "abc"). Also remember that you need to use the `$` prefix to use the variable after it is set. Also, be sure the port is included, even if it is the default. If you receive an error about SSL, be sure you have provided the exact path to the certificate bundle.
+If you receive an error, double-check that the token has been generated. Remember that when setting a bash environmental variable there can be no space between the variable and the value (e.g. `TOKEN="abc"`, not `TOKEN= "abc"`). Also remember that you need to use the `$` prefix to use the variable after it is set. Also, be sure the port is included, even if it is the default. If you receive an error about SSL, be sure you have provided the exact path to the certificate bundle.
 
 To simplify the process, you can use a shell script to retrieve the token and connect to the database: here is an [example script](https://github.com/dvschwab/etl-to-aws-rds/blob/1a3b0cdf651c6505cce6c4d57ab86306a242c0e1/conn-mysql-iam-auth.sh).
 
