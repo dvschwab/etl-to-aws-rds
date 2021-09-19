@@ -98,23 +98,27 @@ rdsmysql.123456789012.us-west-2.rds.amazonaws.com:3306/?Action=connect&DBUser=ja
 
 (here, the trailing three dots have the usual meaning of MORE TO FOLLOW, and are not part of the token)
 
-Since the authentication token may be several hundred characters, Amazon recommends saving it as an environmental variable. In Linux, you can use the `set` command to do this; for example:
+Since the authentication token may be several hundred characters, Amazon recommends saving it as an environmental variable, like so: 
 
 ```Linux
-set TOKEN = "$(aws rds generate-db-auth-token <parameters>)"
+TOKEN="$(aws rds generate-db-auth-token <parameters>)"
 ```
+
+Be sure that there is no space between the variable name and the value. The expression inside the parenthesis will be executed, and the result returned and stored as the value of TOKEN. Note that you must specify the port, even if it is the default.
 
 #### 6. Connect to the MySQL Database with the Authentication Token
 	
 This syntax runs the shell command specified between the parentheses and saves the output as the environmental variable TOKEN. You can then access the variable as $TOKEN in the following call to the MySQL client:
 
 ```Linux
-mysql --host=<hostname> --port=3306 --ssl-ca=<path/to/CA> --enable-cleartext-plugin --user=<user> --password=$TOKEN
+mysql --host=<hostname> --port=3306 --ssl-mode=VERIFY_CA --ssl-ca=<path/to/CA> --enable-cleartext-plugin --user=<user> --password=$TOKEN
 ```
 
 As can be seen, the only additional syntax is the parameter `--password=$TOKEN` and the option `--enable-cleartext-plugin`. The latter is necessary for the client to submit the password (i.e. $TOKEN) without encryption (you'll still see a warning, however). While normally this would be a security risk, the token itself does not provide any information that an attacker could use to defeat the security.
 
 After submitting the MySQL syntax, and assuming all goes as intended, you will be connected to the database with both SSL and IAM role-based security. You can verify the SSL part by entering `status` at the mysql prompt.
+
+If you receive an error, double-check that the token has been generated. Remember that when setting a bash environmental variable there can be no space between the variable and the value (e.g. TOKEN="abc", not TOKEN= "abc"). Also remember that you need to use the `$` prefix to use the variable after it is set. Also, be sure the port is included, even if it is the default. If you receive an error about SSL, be sure you have provided the exact path to the certificate bundle.
 
 To simplify the process, you can use a shell script to retrieve the token and connect to the database: here is an [example script](https://github.com/dvschwab/etl-to-aws-rds/blob/1a3b0cdf651c6505cce6c4d57ab86306a242c0e1/conn-mysql-iam-auth.sh).
 
